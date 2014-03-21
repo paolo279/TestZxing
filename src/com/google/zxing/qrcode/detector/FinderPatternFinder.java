@@ -411,6 +411,8 @@ public class FinderPatternFinder {
           }
         }
         if (!found) {
+        	
+        	//in questo momento trova il punto e lo invia alla viewfinder 
           FinderPattern point = new FinderPattern(centerJ, centerI, estimatedModuleSize);
           possibleCenters.add(point);
           if (resultPointCallback != null) {

@@ -230,6 +230,12 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     characterSet = null;
     
     
+    source = IntentSource.NATIVE_APP_INTENT;
+    
+    decodeFormats = EnumSet.of(BarcodeFormat.QR_CODE);
+    characterSet = intent.getStringExtra(Intents.Scan.CHARACTER_SET);
+    
+    /*
     //prende le azioni dell'activity e vede quali codici devono essere letti
     if (intent != null) {
 
@@ -237,6 +243,10 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       String action = intent.getAction();
       String dataString = intent.getDataString();
 
+      source = IntentSource.NATIVE_APP_INTENT;
+      
+   
+      
       if (Intents.Scan.ACTION.equals(action)) {
 
         // Scan the formats the intent requested, and return the result to the calling activity.
@@ -284,20 +294,11 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
       characterSet = intent.getStringExtra(Intents.Scan.CHARACTER_SET);
 
-    }
+    }*/
+      
   }
   
-  private static boolean isZXingURL(String dataString) {
-    if (dataString == null) {
-      return false;
-    }
-    for (String url : ZXING_URLS) {
-      if (dataString.startsWith(url)) {
-        return true;
-      }
-    }
-    return false;
-  }
+ 
 
   @Override
   protected void onPause() {
@@ -321,98 +322,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     super.onDestroy();
   }
 
-  @Override
-  public boolean onKeyDown(int keyCode, KeyEvent event) {
-    if (keyCode == KeyEvent.KEYCODE_BACK) {
-      if (source == IntentSource.NATIVE_APP_INTENT) {
-        setResult(RESULT_CANCELED);
-        finish();
-        return true;
-      } else if ((source == IntentSource.NONE || source == IntentSource.ZXING_LINK) && lastResult != null) {
-        restartPreviewAfterDelay(0L);
-        return true;
-      }
-    } else if (keyCode == KeyEvent.KEYCODE_FOCUS || keyCode == KeyEvent.KEYCODE_CAMERA) {
-      // Handle these events so they don't launch the Camera app
-      return true;
-    }
-    return super.onKeyDown(keyCode, event);
-  }
-
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    super.onCreateOptionsMenu(menu);
-    menu.add(Menu.NONE, SHARE_ID, Menu.NONE, R.string.menu_share)
-        .setIcon(android.R.drawable.ic_menu_share);
-    menu.add(Menu.NONE, HISTORY_ID, Menu.NONE, R.string.menu_history)
-        .setIcon(android.R.drawable.ic_menu_recent_history);
-    menu.add(Menu.NONE, SETTINGS_ID, Menu.NONE, R.string.menu_settings)
-        .setIcon(android.R.drawable.ic_menu_preferences);
-    menu.add(Menu.NONE, HELP_ID, Menu.NONE, R.string.menu_help)
-        .setIcon(android.R.drawable.ic_menu_help);
-    menu.add(Menu.NONE, ABOUT_ID, Menu.NONE, R.string.menu_about)
-        .setIcon(android.R.drawable.ic_menu_info_details);
-    return true;
-  }
-
-  // Don't display the share menu item if the result overlay is showing.
-  @Override
-  public boolean onPrepareOptionsMenu(Menu menu) {
-    super.onPrepareOptionsMenu(menu);
-    menu.findItem(SHARE_ID).setVisible(lastResult == null);
-    return true;
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    Intent intent = new Intent(Intent.ACTION_VIEW);
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-    switch (item.getItemId()) {
-      case SHARE_ID:
-        intent.setClassName(this, ShareActivity.class.getName());
-        startActivity(intent);
-        break;
-      case HISTORY_ID:
-        intent = new Intent(Intent.ACTION_VIEW);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-        intent.setClassName(this, HistoryActivity.class.getName());
-        startActivityForResult(intent, HISTORY_REQUEST_CODE);
-        break;
-      case SETTINGS_ID:
-        intent.setClassName(this, PreferencesActivity.class.getName());
-        startActivity(intent);
-        break;
-      case HELP_ID:
-        intent.setClassName(this, HelpActivity.class.getName());
-        startActivity(intent);
-        break;
-      case ABOUT_ID:
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.title_about) + versionName);
-        builder.setMessage(getString(R.string.msg_about) + "\n\n" + getString(R.string.zxing_url));
-        builder.setIcon(R.drawable.launcher_icon);
-        builder.setPositiveButton(R.string.button_open_browser, aboutListener);
-        builder.setNegativeButton(R.string.button_cancel, null);
-        builder.show();
-        break;
-      default:
-        return super.onOptionsItemSelected(item);
-    }
-    return true;
-  }
-
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    if (resultCode == RESULT_OK) {
-      if (requestCode == HISTORY_REQUEST_CODE) {
-        int itemNumber = intent.getIntExtra(Intents.History.ITEM_NUMBER, -1);
-        if (itemNumber >= 0) {
-          HistoryItem historyItem = historyManager.buildHistoryItem(itemNumber);
-          decodeOrStoreSavedBitmap(null, historyItem.getResult());
-        }
-      }
-    }
-  }
+  
 
   private void decodeOrStoreSavedBitmap(Bitmap bitmap, Result result) {
     // Bitmap isn't used yet -- will be used soon
@@ -473,7 +383,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     
     ResultHandler resultHandler = ResultHandlerFactory.makeResultHandler(this, rawResult); //viene elaborato in caso
     
-  //  historyManager.addHistoryItem(rawResult, resultHandler); //li salva in un database
+ 
 
     if (barcode == null) {
       // This is from history -- no saved barcode
@@ -501,10 +411,10 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
    //   viewfinderView.drawResultBitmap(barcode);
       
       
-        viewfinderView.drawPunto(punti);
+      //  viewfinderView.drawPunto(punti);
         
         
-      restartPreviewAfterDelay(2000);
+      restartPreviewAfterDelay(0);
       
       
       
@@ -520,30 +430,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 		}
 	});*/
       
-      /* Provo a levare questo pezzo
-      switch (source) {
-        case NATIVE_APP_INTENT:
-        case PRODUCT_SEARCH_LINK:
-          handleDecodeExternally(rawResult, resultHandler, barcode);
-          break;
-        case ZXING_LINK:
-          if (returnUrlTemplate == null){
-            handleDecodeInternally(rawResult, resultHandler, barcode);
-          } else {
-            handleDecodeExternally(rawResult, resultHandler, barcode);
-          }
-          break;
-        case NONE:
-          SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-          if (prefs.getBoolean(PreferencesActivity.KEY_BULK_MODE, false)) {
-            Toast.makeText(this, R.string.msg_bulk_mode_scanned, Toast.LENGTH_SHORT).show();
-            // Wait a moment or else it will scan the same barcode continuously about 3 times
-            restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
-          } else {
-            handleDecodeInternally(rawResult, resultHandler, barcode);
-          }
-          break;
-      }*/
       
       
     }

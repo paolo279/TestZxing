@@ -43,7 +43,7 @@ public final class ViewfinderView extends View {
   private static final int[] SCANNER_ALPHA = {0, 64, 128, 192, 255, 192, 128, 64};
   private static final long ANIMATION_DELAY = 80L;
   private static final int CURRENT_POINT_OPACITY = 0xA0;
-  private static final int MAX_RESULT_POINTS = 20;
+  private static final int MAX_RESULT_POINTS = 3;//20;
   private static final int POINT_SIZE = 6;
 
   private CameraManager cameraManager;
@@ -59,6 +59,10 @@ public final class ViewfinderView extends View {
   private List<ResultPoint> lastPossibleResultPoints;
   long start =0;
   private ResultPoint[] risultato;
+  
+  private  List<ResultPoint> primoPunto;
+  private  List<ResultPoint> secondoPunto;
+  private  List<ResultPoint> terzoPunto;
   
 
   // This constructor is used when the class is built from an XML resource.
@@ -88,6 +92,11 @@ public final class ViewfinderView extends View {
     scannerAlpha = 0;
     possibleResultPoints = new ArrayList<ResultPoint>(5);
     lastPossibleResultPoints = null;
+    
+    primoPunto= new ArrayList<ResultPoint>(5);
+    secondoPunto= new ArrayList<ResultPoint>(5);
+    terzoPunto= new ArrayList<ResultPoint>(5);
+    
   }
 
   public void setCameraManager(CameraManager cameraManager) {
@@ -122,6 +131,8 @@ public final class ViewfinderView extends View {
             	}
     		}
     }
+    
+    
 
     if (resultBitmap != null) {
       // Draw the opaque result bitmap over the scanning rectangle
@@ -151,6 +162,11 @@ public final class ViewfinderView extends View {
       List<ResultPoint> currentLast = lastPossibleResultPoints;
       int frameLeft = frame.left;
       int frameTop = frame.top;
+      
+      
+     
+      
+      
       if (currentPossible.isEmpty()) {
         lastPossibleResultPoints = null;
       } else {
@@ -166,11 +182,7 @@ public final class ViewfinderView extends View {
     	  paint.setTextSize(40);
     	//  canvas.drawText("X: "+ currentPossible.get(0).getX() +"\n Y: "+currentPossible.get(0).getY() , 100, 100, paint);
     	  
-   // 	  if(currentPossible.get(0).equals(currentLast.get(0)) && currentPossible.isEmpty())  {
-    		  
-   // 		  Log.d(VIEW_LOG_TAG, "Punti uguali ms");
-    	  
-    //	  }else{
+  
     		  
     	  
         possibleResultPoints = new ArrayList<ResultPoint>(5);
@@ -181,14 +193,14 @@ public final class ViewfinderView extends View {
        
        
         
-        synchronized (currentPossible) {
+      /*  synchronized (currentPossible) {
           for (ResultPoint point : currentPossible) {
             canvas.drawCircle(frameLeft + (int) (point.getX() * scaleX),
                               frameTop + (int) (point.getY() * scaleY),
                               POINT_SIZE, paint);
             canvas.drawLine(frameLeft + (int) (point.getX() * scaleX) - 50,frameTop + (int) (point.getY() * scaleY) - 50, frameLeft + (int) (point.getX() * scaleX) + 50, frameTop + (int) (point.getY() * scaleY) + 50, paint);
           }
-        }
+        }*/
         
         
         
@@ -197,27 +209,60 @@ public final class ViewfinderView extends View {
     	  start = System.currentTimeMillis();
     	  
       }
-     /* if (currentLast != null) {
+      
+      if (currentLast != null && currentLast.size() == 3) {
+    	  
+    	  primoPunto.add(currentLast.get(0));
+    	  secondoPunto.add(currentLast.get(1));
+    	  terzoPunto.add(currentLast.get(2));
+    	  
+    	  
+    if(primoPunto.size()>=4)	{
+    	
+    	ResultPoint uno = primoPunto.get(0);
+    	ResultPoint due = secondoPunto.get(0);
+    	ResultPoint tre = terzoPunto.get(0);
+    	
         paint.setAlpha(CURRENT_POINT_OPACITY / 2);
         paint.setColor(resultPointColor);
-        synchronized (currentLast) {
-          float radius = POINT_SIZE / 2.0f;
+        float radius = POINT_SIZE;  // / 2.
+        
+        canvas.drawCircle(frameLeft + (int) (uno.getX() * scaleX),
+                frameTop + (int) (uno.getY() * scaleY),
+                radius, paint);
+        
+        canvas.drawCircle(frameLeft + (int) (due.getX() * scaleX),
+                frameTop + (int) (due.getY() * scaleY),
+                radius, paint);
+        
+        canvas.drawCircle(frameLeft + (int) (tre.getX() * scaleX),
+                frameTop + (int) (tre.getY() * scaleY),
+                radius, paint);
+        
+        
+       /* synchronized (currentLast) {
+          float radius = POINT_SIZE;  // / 2.0f;
           for (ResultPoint point : currentLast) {
             canvas.drawCircle(frameLeft + (int) (point.getX() * scaleX),
                               frameTop + (int) (point.getY() * scaleY),
                               radius, paint);
-          }
+          		}
+        	}*/
+        
         }
-      }*/
+    
+      }
 
       // Request another update at the animation interval, but only repaint the laser line,
       // not the entire viewfinder mask. ANIMATION_DELAY
-      postInvalidateDelayed(0,
+      postInvalidateDelayed(ANIMATION_DELAY,
                             frame.left - POINT_SIZE,
                             frame.top - POINT_SIZE,
                             frame.right + POINT_SIZE,
                             frame.bottom + POINT_SIZE);
     }
+    
+  
   }
   
   
@@ -262,6 +307,7 @@ public final class ViewfinderView extends View {
 
     
       int size = points.size();
+     
       if (size > MAX_RESULT_POINTS) {
         // trim it
         points.subList(0, size - MAX_RESULT_POINTS / 2).clear();

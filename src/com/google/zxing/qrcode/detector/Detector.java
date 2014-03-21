@@ -125,7 +125,7 @@ public class Detector {
       // If we didn't find alignment pattern... well try anyway without it
     }
 
-    PerspectiveTransform transform =
+    PerspectiveTransform transform = 
         createTransform(topLeft, topRight, bottomLeft, alignmentPattern, dimension);
 
     BitMatrix bits = sampleGrid(image, transform, dimension);

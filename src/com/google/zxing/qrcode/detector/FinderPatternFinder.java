@@ -416,7 +416,7 @@ public class FinderPatternFinder {
           FinderPattern point = new FinderPattern(centerJ, centerI, estimatedModuleSize);
           possibleCenters.add(point);
           if (resultPointCallback != null) {
-            resultPointCallback.foundPossibleResultPoint(point);
+           // resultPointCallback.foundPossibleResultPoint(point);
           }
         }
         return true;
@@ -540,6 +540,22 @@ public class FinderPatternFinder {
 
       possibleCenters.subList(3, possibleCenters.size()).clear();
     }
+    
+    
+    //provo a fare questa porcata
+    
+    ResultPoint[] trePunti = {possibleCenters.get(0),
+            possibleCenters.get(1),
+            possibleCenters.get(2)
+        };
+    
+    if (resultPointCallback != null) {
+         resultPointCallback.foundPossibleResultPoint(trePunti);
+       }
+    
+    //fine della porcata
+    
+    
 
     return new FinderPattern[]{
         possibleCenters.get(0),

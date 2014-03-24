@@ -25,6 +25,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.text.format.Time;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -57,8 +58,14 @@ public final class ViewfinderView extends View {
   private int scannerAlpha;
   private List<ResultPoint> possibleResultPoints;
   private List<ResultPoint> lastPossibleResultPoints;
-  long start =0;
+  
+  
+  long start = 0;
+  long tempo = 0;
+  boolean prova;
+
   private ResultPoint[] risultato;
+  private ResultPoint[] salvarisultato;
   
   private  List<ResultPoint> primoPunto;
   private  List<ResultPoint> secondoPunto;
@@ -79,12 +86,13 @@ public final class ViewfinderView extends View {
     
     frameColor = resources.getColor(R.color.viewfinder_frame);
     
+    
     risultato = null;
+    salvarisultato = null;
     
     //laserColor = resources.getColor(R.color.viewfinder_laser);
     
    // laserColor = resources.getColor(android.R.color.black);
-    
     
   //  resultPointColor = resources.getColor(R.color.possible_result_points);
     
@@ -93,9 +101,7 @@ public final class ViewfinderView extends View {
     possibleResultPoints = new ArrayList<ResultPoint>(5);
     lastPossibleResultPoints = null;
     
-    primoPunto= new ArrayList<ResultPoint>(5);
-    secondoPunto= new ArrayList<ResultPoint>(5);
-    terzoPunto= new ArrayList<ResultPoint>(5);
+  
     
   }
 
@@ -109,6 +115,8 @@ public final class ViewfinderView extends View {
     if (frame == null) {
       return;
     }
+    
+    
     int width = canvas.getWidth();
     int height = canvas.getHeight();
 
@@ -122,31 +130,32 @@ public final class ViewfinderView extends View {
     
     
     
-    if(risultato != null){
-    	paint.setColor(resultPointColor);
-    	
-    	synchronized (risultato) {
-            for (ResultPoint point : risultato) {
-    	canvas.drawPoint(point.getX(), point.getY(), paint);
-            	}
-    		}
-    }
     
     
+    
+    //questo vecchio metodo disegna il barcode dopo la decodifica
 
     if (resultBitmap != null) {
       // Draw the opaque result bitmap over the scanning rectangle
       paint.setAlpha(CURRENT_POINT_OPACITY);
       canvas.drawBitmap(resultBitmap, null, frame, paint);
+      
+      
     } else {
+    	
+    	
 
-      // Draw a two pixel solid black border inside the framing rect
+      // Disegna il bordo della cornice
+    	
       paint.setColor(frameColor);
       canvas.drawRect(frame.left, frame.top, frame.right + 1, frame.top + 2, paint);
       canvas.drawRect(frame.left, frame.top + 2, frame.left + 2, frame.bottom - 1, paint);
       canvas.drawRect(frame.right - 1, frame.top, frame.right + 1, frame.bottom - 1, paint);
       canvas.drawRect(frame.left, frame.bottom - 1, frame.right + 1, frame.bottom + 1, paint);
 
+      
+      //veniva disegnato in laser al centro della cornice
+      
       // Draw a red "laser scanner" line through the middle to show decoding is active
       //     paint.setColor(laserColor);
       //paint.setAlpha(SCANNER_ALPHA[scannerAlpha]);
@@ -154,91 +163,73 @@ public final class ViewfinderView extends View {
       //int middle = frame.height() / 2 + frame.top;
      // canvas.drawRect(frame.left + 2, middle - 1, frame.right - 1, middle + 2, paint);
       
+      
+      
       Rect previewFrame = cameraManager.getFramingRectInPreview();
       float scaleX = frame.width() / (float) previewFrame.width();
       float scaleY = frame.height() / (float) previewFrame.height();
 
-      List<ResultPoint> currentPossible = possibleResultPoints;
-      List<ResultPoint> currentLast = lastPossibleResultPoints;
+      
+     
       int frameLeft = frame.left;
       int frameTop = frame.top;
       
       
+      
+      
+      
+      if(risultato != null){
+      	paint.setColor(resultPointColor);
+      	
+      	synchronized (risultato) {
+              for (ResultPoint point : risultato) {
+            	  canvas.drawCircle(frameLeft + (int) (point.getX() * scaleX),
+                          frameTop + (int) (point.getY() * scaleY),
+                          POINT_SIZE, paint);
+              	}
+      		}
+      }
+      
+      
+      // incrementa lo start: se dopo x postInvalidate (circa 300 ms) che non vengono ricevuti nuovi punti 
+      // imposta il risultato a null e i punti non vengono più disegnati a schermo
+      start++;
+      
+      if(start>6)  risultato = null;
+      
      
+ 		  
       
       
-      if (currentPossible.isEmpty()) {
-        lastPossibleResultPoints = null;
-      } else {
     	  
-    	  if(start != 0){
-        	  
-        	  long end = System.currentTimeMillis();
-              Log.d(VIEW_LOG_TAG, "Punti trovati e disegnati in " + (end - start) + " ms");
-        	  
-        	  
-          }
-    	  
-    	  paint.setTextSize(40);
-    	//  canvas.drawText("X: "+ currentPossible.get(0).getX() +"\n Y: "+currentPossible.get(0).getY() , 100, 100, paint);
-    	  
-  
-    		  
-    	  
-        possibleResultPoints = new ArrayList<ResultPoint>(5);
-        lastPossibleResultPoints = currentPossible;
+      //vecchio metodo commentato 
+      
+   // List<ResultPoint> currentPossible = possibleResultPoints;
+      //List<ResultPoint> currentLast = lastPossibleResultPoints;
+      
+      
+     /*   possibleResultPoints = new ArrayList<ResultPoint>(5);
+     /   lastPossibleResultPoints = currentPossible;
+        
         paint.setAlpha(CURRENT_POINT_OPACITY);
         paint.setColor(resultPointColor);
 
        
        
         
-      /*  synchronized (currentPossible) {
+        synchronized (currentPossible) {
           for (ResultPoint point : currentPossible) {
             canvas.drawCircle(frameLeft + (int) (point.getX() * scaleX),
                               frameTop + (int) (point.getY() * scaleY),
                               POINT_SIZE, paint);
-            canvas.drawLine(frameLeft + (int) (point.getX() * scaleX) - 50,frameTop + (int) (point.getY() * scaleY) - 50, frameLeft + (int) (point.getX() * scaleX) + 50, frameTop + (int) (point.getY() * scaleY) + 50, paint);
+         //   canvas.drawLine(frameLeft + (int) (point.getX() * scaleX) - 50,frameTop + (int) (point.getY() * scaleY) - 50, frameLeft + (int) (point.getX() * scaleX) + 50, frameTop + (int) (point.getY() * scaleY) + 50, paint);
           }
         }*/
-        
-        
-        
-    	//  }
+ 
     	  
-    	  start = System.currentTimeMillis();
-    	  
-      }
+      } 
       
-      if (currentLast != null && currentLast.size() == 3) {
-    	  
-    	  primoPunto.add(currentLast.get(0));
-    	  secondoPunto.add(currentLast.get(1));
-    	  terzoPunto.add(currentLast.get(2));
-    	  
-    	  
-    if(primoPunto.size()>=4)	{
-    	
-    	ResultPoint uno = primoPunto.get(0);
-    	ResultPoint due = secondoPunto.get(0);
-    	ResultPoint tre = terzoPunto.get(0);
-    	
-        paint.setAlpha(CURRENT_POINT_OPACITY / 2);
-        paint.setColor(resultPointColor);
-        float radius = POINT_SIZE;  // / 2.
-        
-        canvas.drawCircle(frameLeft + (int) (uno.getX() * scaleX),
-                frameTop + (int) (uno.getY() * scaleY),
-                radius, paint);
-        
-        canvas.drawCircle(frameLeft + (int) (due.getX() * scaleX),
-                frameTop + (int) (due.getY() * scaleY),
-                radius, paint);
-        
-        canvas.drawCircle(frameLeft + (int) (tre.getX() * scaleX),
-                frameTop + (int) (tre.getY() * scaleY),
-                radius, paint);
-        
+ 
         
        /* synchronized (currentLast) {
           float radius = POINT_SIZE;  // / 2.0f;
@@ -247,15 +238,16 @@ public final class ViewfinderView extends View {
                               frameTop + (int) (point.getY() * scaleY),
                               radius, paint);
           		}
-        	}*/
-        
-        }
+        	}
+   */
     
-      }
+    
+    
+    
 
-      // Request another update at the animation interval, but only repaint the laser line,
-      // not the entire viewfinder mask. ANIMATION_DELAY
-      postInvalidateDelayed(ANIMATION_DELAY,
+      // dopo aver finito setta un tempo di ANIMATION_DELAY e richiama l'onDraw all'interno della cornice
+    
+     postInvalidateDelayed(40L,
                             frame.left - POINT_SIZE,
                             frame.top - POINT_SIZE,
                             frame.right + POINT_SIZE,
@@ -263,12 +255,14 @@ public final class ViewfinderView extends View {
     }
     
   
-  }
+//  }
   
   
   
 
-  public void drawViewfinder() {
+  
+
+public void drawViewfinder() {
     Bitmap resultBitmap = this.resultBitmap;
     this.resultBitmap = null;
     if (resultBitmap != null) {
@@ -298,8 +292,30 @@ public final class ViewfinderView extends View {
   
 
   //i possibili result point vengono inviati !!
-  public void addPossibleResultPoint(ResultPoint point) {
-    List<ResultPoint> points = possibleResultPoints;
+  public void addPossibleResultPoint(ResultPoint point[]) {
+	  
+   risultato = point;
+   start=0;
+   
+   
+   if(tempo != 0){
+	   
+	   Log.d(VIEW_LOG_TAG, "Punti trovati in " + (System.currentTimeMillis() - tempo) + " ms");
+	   tempo = 0;
+   }
+   
+   tempo =  System.currentTimeMillis();
+   
+   
+   
+  
+   
+   //possibleResultPoints.add(point[0]);
+   //possibleResultPoints.add(point[1]);
+   //possibleResultPoints.add(point[2]);
+
+   
+	/*List<ResultPoint> points = possibleResultPoints;
     synchronized (points) {
     	
   
@@ -312,7 +328,7 @@ public final class ViewfinderView extends View {
         // trim it
         points.subList(0, size - MAX_RESULT_POINTS / 2).clear();
       }
-    }
+    }*/
   }
 
 }

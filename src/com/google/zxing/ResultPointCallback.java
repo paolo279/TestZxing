@@ -24,6 +24,7 @@ package com.google.zxing;
  */
 public interface ResultPointCallback {
 
-  void foundPossibleResultPoint(ResultPoint point);
+	//levare i []
+  void foundPossibleResultPoint(ResultPoint[] point);
 
 }

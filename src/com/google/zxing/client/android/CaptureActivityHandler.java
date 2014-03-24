@@ -90,7 +90,11 @@ public final class CaptureActivityHandler extends Handler {
 		Bundle bundle = message.getData();
 		Bitmap barcode = bundle == null ? null :
             (Bitmap) bundle.getParcelable(DecodeThread.BARCODE_BITMAP);
-		activity.handleDecode((Result) message.obj, barcode);
+		
+		restartPreviewAndDecode();
+		
+		
+	//	activity.handleDecode((Result) message.obj, barcode);
 		
 		//faccio aspettare 2 secondi
 		/*try {
@@ -143,6 +147,7 @@ public final class CaptureActivityHandler extends Handler {
       state = State.PREVIEW;
       cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
       cameraManager.requestAutoFocus(this, R.id.auto_focus);
+      
       //commento questo per non far ripristinare la FinderView
     //  activity.drawViewfinder();
     }

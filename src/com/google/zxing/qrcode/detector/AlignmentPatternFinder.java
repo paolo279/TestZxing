@@ -268,7 +268,7 @@ final class AlignmentPatternFinder {
       AlignmentPattern point = new AlignmentPattern(centerJ, centerI, estimatedModuleSize);
       possibleCenters.add(point);
       if (resultPointCallback != null) {
-        resultPointCallback.foundPossibleResultPoint(point);
+   //     resultPointCallback.foundPossibleResultPoint(point);
       }
     }
     return null;

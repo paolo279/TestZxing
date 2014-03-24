@@ -143,9 +143,9 @@ public abstract class UPCEANReader extends OneDReader {
         (ResultPointCallback) hints.get(DecodeHintType.NEED_RESULT_POINT_CALLBACK);
 
     if (resultPointCallback != null) {
-      resultPointCallback.foundPossibleResultPoint(new ResultPoint(
-          (startGuardRange[0] + startGuardRange[1]) / 2.0f, rowNumber
-      ));
+   //   resultPointCallback.foundPossibleResultPoint(new ResultPoint(
+   //       (startGuardRange[0] + startGuardRange[1]) / 2.0f, rowNumber
+   //   ));
     }
 
     StringBuilder result = decodeRowStringBuffer;
@@ -153,17 +153,17 @@ public abstract class UPCEANReader extends OneDReader {
     int endStart = decodeMiddle(row, startGuardRange, result);
 
     if (resultPointCallback != null) {
-      resultPointCallback.foundPossibleResultPoint(new ResultPoint(
-          endStart, rowNumber
-      ));
+    //  resultPointCallback.foundPossibleResultPoint(new ResultPoint(
+    //      endStart, rowNumber
+     // ));
     }
 
     int[] endRange = decodeEnd(row, endStart);
 
     if (resultPointCallback != null) {
-      resultPointCallback.foundPossibleResultPoint(new ResultPoint(
-          (endRange[0] + endRange[1]) / 2.0f, rowNumber
-      ));
+    //  resultPointCallback.foundPossibleResultPoint(new ResultPoint(
+    //      (endRange[0] + endRange[1]) / 2.0f, rowNumber
+    //  ));
     }
 
 

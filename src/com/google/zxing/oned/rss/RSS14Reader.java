@@ -170,7 +170,7 @@ public final class RSS14Reader extends AbstractRSSReader {
           // row is actually reversed
           center = row.getSize() - 1 - center;
         }
-        resultPointCallback.foundPossibleResultPoint(new ResultPoint(center, rowNumber));
+     //   resultPointCallback.foundPossibleResultPoint(new ResultPoint(center, rowNumber));
       }
 
       DataCharacter outside = decodeDataCharacter(row, pattern, true);

@@ -65,7 +65,8 @@ public final class ViewfinderView extends View {
   boolean prova;
 
   private ResultPoint[] risultato;
-  private ResultPoint[] salvarisultato;
+  
+  ResultEMA ema;
   
   private  List<ResultPoint> primoPunto;
   private  List<ResultPoint> secondoPunto;
@@ -88,7 +89,8 @@ public final class ViewfinderView extends View {
     
     
     risultato = null;
-    salvarisultato = null;
+    
+    ema = new ResultEMA((float) 0.3);
     
     //laserColor = resources.getColor(R.color.viewfinder_laser);
     
@@ -188,6 +190,12 @@ public final class ViewfinderView extends View {
                           POINT_SIZE, paint);
               	}
       		}
+      	
+      	//disegno un triangolo
+      	paint.setStrokeWidth(10.0f);
+      	canvas.drawLine(frameLeft + (int) (risultato[0].getX() * scaleX), frameTop + (int) (risultato[0].getY() * scaleY), frameLeft + (int) (risultato[1].getX() * scaleX),frameTop + (int) (risultato[1].getY() * scaleY), paint);
+      	canvas.drawLine(frameLeft + (int) (risultato[1].getX() * scaleX), frameTop + (int) (risultato[1].getY() * scaleY),  frameLeft + (int) (risultato[2].getX() * scaleX), frameTop + (int) (risultato[2].getY() * scaleY), paint);
+      	canvas.drawLine(frameLeft + (int) (risultato[2].getX() * scaleX), frameTop + (int) (risultato[2].getY() * scaleY),  frameLeft + (int) (risultato[0].getX() * scaleX), frameTop + (int) (risultato[0].getY() * scaleY), paint);
       }
       
       
@@ -195,7 +203,10 @@ public final class ViewfinderView extends View {
       // imposta il risultato a null e i punti non vengono più disegnati a schermo
       start++;
       
-      if(start>6)  risultato = null;
+      if(start>6) {
+    	  risultato = null;
+    	  ema = new ResultEMA((float) 0.3);
+      }
       
      
  		  
@@ -283,21 +294,22 @@ public void drawViewfinder() {
   
   
   
-  public void drawPunto(ResultPoint[] punti) {
-	  paint.setStrokeWidth(15.0f);
-	    risultato = punti;
-	    invalidate();
-	  }
-  
   
 
   //i possibili result point vengono inviati !!
   public void addPossibleResultPoint(ResultPoint point[]) {
 	  
-   risultato = point;
+	   //risultato = point;
+	  
+	risultato = ema.media(point);
+   
+   
+   //reimposto il contatore dei refresh senza punti a 0
    start=0;
    
    
+   
+   // utile per verificare la velocità di detection
    if(tempo != 0){
 	   
 	   Log.d(VIEW_LOG_TAG, "Punti trovati in " + (System.currentTimeMillis() - tempo) + " ms");

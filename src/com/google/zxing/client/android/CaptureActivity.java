@@ -235,6 +235,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     decodeFormats = EnumSet.of(BarcodeFormat.QR_CODE);
     characterSet = intent.getStringExtra(Intents.Scan.CHARACTER_SET);
     
+    
+    
     /*
     //prende le azioni dell'activity e vede quali codici devono essere letti
     if (intent != null) {

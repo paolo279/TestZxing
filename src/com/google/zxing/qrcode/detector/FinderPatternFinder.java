@@ -179,6 +179,13 @@ public class FinderPatternFinder {
 
     FinderPattern[] patternInfo = selectBestPatterns();
     ResultPoint.orderBestPatterns(patternInfo);
+    
+    
+    //li invio dopo...
+    
+    if (resultPointCallback != null) {
+        resultPointCallback.foundPossibleResultPoint(patternInfo);
+      }
 
     return new FinderPatternInfo(patternInfo);
   }
@@ -542,20 +549,7 @@ public class FinderPatternFinder {
     }
     
     
-    //provo a fare questa porcata
-    
-    ResultPoint[] trePunti = {possibleCenters.get(0),
-            possibleCenters.get(1),
-            possibleCenters.get(2)
-        };
-    
-    if (resultPointCallback != null) {
-         resultPointCallback.foundPossibleResultPoint(trePunti);
-       }
-    
-    //fine della porcata
-    
-    
+
 
     return new FinderPattern[]{
         possibleCenters.get(0),

@@ -90,7 +90,7 @@ public final class ViewfinderView extends View {
     
     risultato = null;
     
-    ema = new ResultEMA((float) 0.3);
+    ema = new ResultEMA(0.2f);
     
     //laserColor = resources.getColor(R.color.viewfinder_laser);
     
@@ -205,7 +205,7 @@ public final class ViewfinderView extends View {
       
       if(start>6) {
     	  risultato = null;
-    	  ema = new ResultEMA((float) 0.3);
+    	  ema = new ResultEMA(0.2f);
       }
       
      
@@ -299,9 +299,9 @@ public void drawViewfinder() {
   //i possibili result point vengono inviati !!
   public void addPossibleResultPoint(ResultPoint point[]) {
 	  
-	   //risultato = point;
+	  //risultato = point;
 	  
-	risultato = ema.media(point);
+	   risultato = ema.media(point);
    
    
    //reimposto il contatore dei refresh senza punti a 0

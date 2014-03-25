@@ -107,6 +107,8 @@ public class ResultPoint {
     patterns[0] = pointA;
     patterns[1] = pointB;
     patterns[2] = pointC;
+    
+    
   }
 
 

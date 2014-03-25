@@ -68,9 +68,10 @@ public final class ViewfinderView extends View {
   
   ResultEMA ema;
   
-  private  List<ResultPoint> primoPunto;
-  private  List<ResultPoint> secondoPunto;
-  private  List<ResultPoint> terzoPunto;
+  int angle;
+  
+  double density;
+
   
 
   // This constructor is used when the class is built from an XML resource.
@@ -156,18 +157,10 @@ public final class ViewfinderView extends View {
       canvas.drawRect(frame.left, frame.bottom - 1, frame.right + 1, frame.bottom + 1, paint);
 
       
-      //veniva disegnato in laser al centro della cornice
-      
-      // Draw a red "laser scanner" line through the middle to show decoding is active
-      //     paint.setColor(laserColor);
-      //paint.setAlpha(SCANNER_ALPHA[scannerAlpha]);
-      //scannerAlpha = (scannerAlpha + 1) % SCANNER_ALPHA.length;
-      //int middle = frame.height() / 2 + frame.top;
-     // canvas.drawRect(frame.left + 2, middle - 1, frame.right - 1, middle + 2, paint);
-      
       
       
       Rect previewFrame = cameraManager.getFramingRectInPreview();
+      
       float scaleX = frame.width() / (float) previewFrame.width();
       float scaleY = frame.height() / (float) previewFrame.height();
 
@@ -181,6 +174,8 @@ public final class ViewfinderView extends View {
       
       
       if(risultato != null){
+    	  
+    	  
       	paint.setColor(resultPointColor);
       	
       	synchronized (risultato) {
@@ -191,11 +186,31 @@ public final class ViewfinderView extends View {
               	}
       		}
       	
-      	//disegno un triangolo
+      	
+      	//disegno il testo e due linee che uniscono i punti
+      	
+      //ipotizzando che il QrCode sia di 2,5 cm ho la densità px/cm
+      	density = distance(risultato[1], risultato[2], scaleX, scaleY, 2.3);
+      	
+      	paint.setTextSize(20);
+      	
+      	///canvas.drawText("Angolo: " +angle+ "° - Densità: " +density+ " px/cm " , 100, 100, paint);
+      	
+      	canvas.drawText("Angolo: " +angle+ "° - X1: "+ (int)risultato[1].getX()+" , "+ (int)risultato[1].getY()+" Y1: "+ (int)risultato[2].getX()+" , "+ (int)risultato[2].getY()+"cos: "+ Math.cos(angle*Math.PI / 180)+" sin: "+ Math.sin(angle*Math.PI / 180) , 100, 100, paint);
+      	
+      	
+      	canvas.drawLine(frameLeft, frameTop +100, (float) (frameLeft +density), frameTop + 100, paint);
+      	
       	paint.setStrokeWidth(10.0f);
+      	
       	canvas.drawLine(frameLeft + (int) (risultato[0].getX() * scaleX), frameTop + (int) (risultato[0].getY() * scaleY), frameLeft + (int) (risultato[1].getX() * scaleX),frameTop + (int) (risultato[1].getY() * scaleY), paint);
       	canvas.drawLine(frameLeft + (int) (risultato[1].getX() * scaleX), frameTop + (int) (risultato[1].getY() * scaleY),  frameLeft + (int) (risultato[2].getX() * scaleX), frameTop + (int) (risultato[2].getY() * scaleY), paint);
-      	canvas.drawLine(frameLeft + (int) (risultato[2].getX() * scaleX), frameTop + (int) (risultato[2].getY() * scaleY),  frameLeft + (int) (risultato[0].getX() * scaleX), frameTop + (int) (risultato[0].getY() * scaleY), paint);
+      	
+      	canvas.drawCircle(  (float) (frameLeft + (risultato[2].getX() * scaleX) + (8*density*Math.cos(angle*Math.PI / 180))) , (float)   (frameTop + (risultato[2].getY() * scaleY) - (8*density*Math.sin(angle*Math.PI / 180)))  ,POINT_SIZE ,  paint);
+      	
+      	canvas.drawCircle(  (float) (frameLeft + (risultato[2].getX() * scaleX) + (5*density*Math.cos((angle+45)*Math.PI / 180))) , (float)   (frameTop + (risultato[2].getY() * scaleY) - (5*density*Math.sin((angle+45)*Math.PI / 180)))  ,POINT_SIZE ,  paint);
+      	
+     
       }
       
       
@@ -206,54 +221,11 @@ public final class ViewfinderView extends View {
       if(start>6) {
     	  risultato = null;
     	  ema = new ResultEMA(0.2f);
-      }
-      
-     
- 		  
-      
-      
     	  
-      //vecchio metodo commentato 
-      
-   // List<ResultPoint> currentPossible = possibleResultPoints;
-      //List<ResultPoint> currentLast = lastPossibleResultPoints;
-      
-      
-     /*   possibleResultPoints = new ArrayList<ResultPoint>(5);
-     /   lastPossibleResultPoints = currentPossible;
-        
-        paint.setAlpha(CURRENT_POINT_OPACITY);
-        paint.setColor(resultPointColor);
+      	}
 
-       
-       
-        
-        synchronized (currentPossible) {
-          for (ResultPoint point : currentPossible) {
-            canvas.drawCircle(frameLeft + (int) (point.getX() * scaleX),
-                              frameTop + (int) (point.getY() * scaleY),
-                              POINT_SIZE, paint);
-         //   canvas.drawLine(frameLeft + (int) (point.getX() * scaleX) - 50,frameTop + (int) (point.getY() * scaleY) - 50, frameLeft + (int) (point.getX() * scaleX) + 50, frameTop + (int) (point.getY() * scaleY) + 50, paint);
-          }
-        }*/
- 
-    	  
       } 
       
- 
-        
-       /* synchronized (currentLast) {
-          float radius = POINT_SIZE;  // / 2.0f;
-          for (ResultPoint point : currentLast) {
-            canvas.drawCircle(frameLeft + (int) (point.getX() * scaleX),
-                              frameTop + (int) (point.getY() * scaleY),
-                              radius, paint);
-          		}
-        	}
-   */
-    
-    
-    
     
 
       // dopo aver finito setta un tempo di ANIMATION_DELAY e richiama l'onDraw all'interno della cornice
@@ -265,11 +237,6 @@ public final class ViewfinderView extends View {
                             frame.bottom + POINT_SIZE);
     }
     
-  
-//  }
-  
-  
-  
 
   
 
@@ -297,12 +264,23 @@ public void drawViewfinder() {
   
 
   //i possibili result point vengono inviati !!
+  //il punto 0 è in basso a sinistra,
+  //il punto 1 è in alto a sinistra
+  //il punto 2 è in alto a destra
   public void addPossibleResultPoint(ResultPoint point[]) {
 	  
 	  //risultato = point;
 	  
 	   risultato = ema.media(point);
+	   
+	    angle = (int) Math.toDegrees(Math.atan2(risultato[1].getY() - risultato[2].getY(), risultato[2].getX() - risultato[1].getX()));
+
+	 
+	  
+   // density = (int) ResultPoint.distance(risultato[1], risultato[2]) / 6;
+  
    
+	  // angle = (float) Math.toDegrees(Math.atan2(10, 100));
    
    //reimposto il contatore dei refresh senza punti a 0
    start=0;
@@ -322,25 +300,13 @@ public void drawViewfinder() {
    
   
    
-   //possibleResultPoints.add(point[0]);
-   //possibleResultPoints.add(point[1]);
-   //possibleResultPoints.add(point[2]);
-
-   
-	/*List<ResultPoint> points = possibleResultPoints;
-    synchronized (points) {
-    	
-  
-    	points.add(point);
-
-    
-      int size = points.size();
-     
-      if (size > MAX_RESULT_POINTS) {
-        // trim it
-        points.subList(0, size - MAX_RESULT_POINTS / 2).clear();
-      }
-    }*/
   }
+  
+  public  double distance(ResultPoint pattern1, ResultPoint pattern2, float scaleX , float scaleY , double lenght) {
+	    float xDiff = (pattern1.getX() - pattern2.getX())*scaleX;
+	    float yDiff = (pattern1.getY() - pattern2.getY())*scaleY;
+	    
+	    return  ( Math.sqrt((double) (xDiff * xDiff + yDiff * yDiff))/lenght);
+	  }
 
 }

@@ -32,4 +32,10 @@ final class ViewfinderResultPointCallback implements ResultPointCallback {
     viewfinderView.addPossibleResultPoint(point);
   }
 
+@Override
+public void inviaModulePointSize(float estimatedModuleSize) {
+	// TODO Auto-generated method stub
+	 viewfinderView.setModulePointSize(estimatedModuleSize);
+}
+
 }

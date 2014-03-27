@@ -62,6 +62,9 @@ public class QRCodeReader implements Reader {
   public Result decode(BinaryBitmap image) throws NotFoundException, ChecksumException, FormatException {
     return decode(image, null);
   }
+  
+  
+  //posso modificare il metodo e renderlo più leggero per non ripetere la detection
 
   @Override
   public Result decode(BinaryBitmap image, Map<DecodeHintType,?> hints)

@@ -90,6 +90,8 @@ public final class ViewfinderView extends View {
   
   double density;
   
+  float modulePointSize;
+  
   boolean spostati=false;
   
   List<Point> puntiDinamici = new ArrayList<Point>(2);
@@ -215,29 +217,42 @@ public final class ViewfinderView extends View {
     	  
       	paint.setColor(resultPointColor);
       	
-      	synchronized (risultato) {
+      	/*synchronized (risultato) {
               for (ResultPoint point : risultato) {
             	  canvas.drawCircle(frameLeft + (int) (point.getX() * scaleX),
                           frameTop + (int) (point.getY() * scaleY),
                           POINT_SIZE, paint);
               	}
-      		}
+      		}*/
       	
       	
       	//disegno il testo e due linee che uniscono i punti
       	
-      //ipotizzando che il QrCode sia di 2,5 cm ho la densità px/cm
+      //ipotizzando che il QrCode sia di 2,3 cm ho la densità px/cm
       	density = distance(risultato[1], risultato[2], scaleX, scaleY, 2.3);
       	
       	
       	paint.setTextSize(25);
       	
-      	canvas.drawText("Angolo: " +angle+ "° - Densità: " +(int) density+ " px/cm - Beta: "+beta , 100, 100, paint);
       	
-      ///canvas.drawText("Angolo: " +angle+ "° - X1: "+ (int)risultato[1].getX()+" , "+ (int)risultato[1].getY()+" Y1: "+ (int)risultato[2].getX()+" , "+ (int)risultato[2].getY()+"cos: "+ Math.cos(angle*Math.PI / 180)+" sin: "+ Math.sin(angle*Math.PI / 180) , 100, 100, paint);
+      	
+     
+      	
+      	
       	
       	
       	canvas.drawLine(frameLeft, frameTop +100, (float) (frameLeft +density), frameTop + 100, paint);
+      	
+      	//Rect rect = new Rect(  (int) (frameLeft +  (risultato[0].getX()-modulePointSize) * scaleX)  , (int) (frameTop +  (risultato[0].getY()-modulePointSize) * scaleY)   , (int) (frameLeft +  (risultato[0].getX()+modulePointSize) * scaleX) , (int) (frameTop +  (risultato[0].getY()+modulePointSize) * scaleY) );
+
+      	canvas.drawText("Angolo: " +angle+ "° - Densità: " +(int) density+ " px/cm - GrandezzaPunti: "+modulePointSize , 100, 100, paint);
+      	
+      	//canvas.drawRect(rect, paint);
+      
+      
+    
+      	//canvas.drawCircle(frameLeft + (int) (risultato[0].getX() * scaleX), frameTop + (int) (risultato[0].getY() * scaleY), modulePointSize* scaleX* scaleY, paint);
+      	
       	
       	paint.setStrokeWidth(10.0f);
       	
@@ -251,7 +266,13 @@ public final class ViewfinderView extends View {
       	puntiDinamici.get(0).y =  (int) (frameTop + (risultato[2].getY() * scaleY) + (3*density*Math.sin(angle*Math.PI / 180)));
       	
       	paint.setColor(puntiDinamiciColor[0]);
-      	canvas.drawCircle(  puntiDinamici.get(0).x , puntiDinamici.get(0).y , (float) density/4 ,  paint);
+      	
+      	
+      	paint.setStrokeWidth(5.0f);
+      	
+      	
+      	disegnaFreccia(canvas,puntiDinamici.get(0));
+      	
       	
       	
       	puntiDinamici.get(1).x = (int) (frameLeft + (risultato[2].getX() * scaleX) + (4*density*Math.cos((angle+45)*Math.PI / 180)));
@@ -260,7 +281,11 @@ public final class ViewfinderView extends View {
       	
       	
       	paint.setColor(puntiDinamiciColor[1]);
-      	canvas.drawCircle(  puntiDinamici.get(1).x , puntiDinamici.get(1).y , (float) density/4 ,  paint);
+      	
+      	
+      	
+      	disegnaFreccia(canvas,puntiDinamici.get(1));
+      	//canvas.drawCircle(  puntiDinamici.get(1).x , puntiDinamici.get(1).y , (float) density/4 ,  paint);
       	
       	
       	puntiDinamici.get(2).x = (int) (frameLeft + (risultato[2].getX() * scaleX) + (r*density*Math.cos((angle+beta)*Math.PI / 180)));
@@ -269,7 +294,9 @@ public final class ViewfinderView extends View {
       	
       	
       	paint.setColor(puntiDinamiciColor[2]);
-      	canvas.drawCircle(  puntiDinamici.get(2).x , puntiDinamici.get(2).y , (float) density/4 ,  paint);
+      	
+      	disegnaFreccia(canvas,puntiDinamici.get(2));
+      	//canvas.drawCircle(  puntiDinamici.get(2).x , puntiDinamici.get(2).y , (float) density/4 ,  paint);
       	
       	//canvas.drawCircle(  (float) (frameLeft + (risultato[2].getX() * scaleX) + (5*density*Math.cos((angle+45)*Math.PI / 180))) , (float)   (frameTop + (risultato[2].getY() * scaleY) - (5*density*Math.sin((angle+45)*Math.PI / 180)))  ,POINT_SIZE ,  paint);
       	
@@ -287,8 +314,6 @@ public final class ViewfinderView extends View {
     	  
     	  ema = new ResultEMA(0.5f);
     	  
-    	  beta=0;
-    	  r=7;
       	}
 
       } 
@@ -326,6 +351,25 @@ public void drawViewfinder() {
     invalidate();
   }
   
+  public void disegnaFreccia(Canvas canvas, Point p){
+	  
+	    int lineaX = (int) ( p.x + 1.5*density*Math.cos((angle+45)*Math.PI / 180));
+    	int lineaY = (int) ( p.y + 1.5*density*Math.sin((angle+45)*Math.PI / 180));
+    	
+    	canvas.drawLine( p.x, p.y, lineaX, lineaY , paint);
+    	
+    	int puntaUnoX = (int) ( p.x + 0.3*density*Math.cos((angle+30+45)*Math.PI / 180));
+    	int puntaUnoY = (int) ( p.y + 0.3*density*Math.sin((angle+30+45)*Math.PI / 180));
+    	
+    	int puntaDueX = (int) ( p.x + 0.3*density*Math.cos((angle-30+45)*Math.PI / 180));
+    	int puntaDueY = (int) ( p.y + 0.3*density*Math.sin((angle-30+45)*Math.PI / 180));
+    	
+    	canvas.drawLine( p.x, p.y, puntaUnoX, puntaUnoY , paint);
+    	canvas.drawLine( p.x, p.y, puntaDueX, puntaDueY , paint);
+    	
+    	
+  }
+  
   
   
   
@@ -359,12 +403,18 @@ public void drawViewfinder() {
    }
    
    tempo =  System.currentTimeMillis();
-   
-   
-   
-  
+
    
   }
+  
+  
+  
+  public void setModulePointSize(float estimatedModuleSize) {
+	  modulePointSize = estimatedModuleSize*3.4f;
+  }
+  
+  
+ 
   
   public  double distance(ResultPoint pattern1, ResultPoint pattern2, float scaleX , float scaleY , double lenght) {
 	    float xDiff = (pattern1.getX() - pattern2.getX())*scaleX;
@@ -392,16 +442,9 @@ public void drawViewfinder() {
 				 float distanza = (float) (Math.sqrt((deltaX * deltaX +  deltaY *  deltaY)));
 				 
 				 if(distanza >= 100){
-					 
-					 if(beta==23) {
-						 beta =  0;
-						 r=7;
-					 }
-					 else {
-						 beta= 23;
-						 r=7.6;
-					 }
-					
+
+					 new  DoTask(2).execute();
+	
 				 }
 				 
 				 
@@ -475,13 +518,34 @@ public void drawViewfinder() {
 				int statusCode = statusLine.getStatusCode();
 				if (statusCode == 200) {
 					
-					
-					if(puntiDinamiciColor[i-1] == getResources().getColor(R.color.result_points))  
+					if(i-1 ==2 ){
 						
-						puntiDinamiciColor[i-1] =  getResources().getColor(R.color.viewfinder_laser);
+						 if(beta==23) {
+							 beta =  0;
+							 r=7;
+						 }
+						 else {
+							 beta= 23;
+							 r=7.6;
+						 }
+						
+						
+						
+					}else {
+						
+						
+						if(puntiDinamiciColor[i-1] == getResources().getColor(R.color.result_points))  
+							
+							puntiDinamiciColor[i-1] =  getResources().getColor(R.color.viewfinder_laser);
+						
+						else   
+							puntiDinamiciColor[i-1] = getResources().getColor(R.color.result_points);
+						
+						
+					}
 					
-					else   
-						puntiDinamiciColor[i-1] = getResources().getColor(R.color.result_points);
+					
+					
 					
 					/*HttpEntity entity = response.getEntity();
 					InputStream content = entity.getContent();

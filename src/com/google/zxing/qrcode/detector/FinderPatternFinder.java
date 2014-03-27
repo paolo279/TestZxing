@@ -184,7 +184,9 @@ public class FinderPatternFinder {
     //li invio dopo...
     
     if (resultPointCallback != null) {
-        resultPointCallback.foundPossibleResultPoint(patternInfo);
+       resultPointCallback.foundPossibleResultPoint(patternInfo);
+       
+       resultPointCallback.inviaModulePointSize(patternInfo[0].getEstimatedModuleSize());
       }
 
     return new FinderPatternInfo(patternInfo);

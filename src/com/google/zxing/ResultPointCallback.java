@@ -26,5 +26,7 @@ public interface ResultPointCallback {
 
 	//levare i []
   void foundPossibleResultPoint(ResultPoint[] point);
+  
+  void inviaModulePointSize(float estimatedModuleSize);
 
 }
